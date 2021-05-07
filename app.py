@@ -19,7 +19,8 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 # Save reference to the table
-Precipitation = Base.classes.hawaii
+Measurement = Base.classes.measurement
+Station = Base.classes.station
 
 #################################################
 # Flask Setup
@@ -56,15 +57,27 @@ def precipitation():
     results = session.query(Measurement.date, Measurement.prcp).\
                 order_by(Measurement.date).all()
     session.close()
+    
+    #create a dictionary from the raw data and append to a list of all_measures
+    all_measures=[]
+    for date, prcp in results:
+        precip_dict = {}
+        precip_dict[date] = prcp
+        all_measures.append(precip_dict)
+    
+    return jsonify(all_measures)
+        
+    
 
 @app.route("/api/v1.0/stations")
+def stations():
     #create session
     session = Session(engine)
     #select date and prcp
-    engine.execute('SELECT station FROM Measurement').fetchall()
+    engine.execute('SELECT name FROM Station').fetchall()
     
     #query all precipitation measurements
-    results = session.query(Measurement.station).all()
+    results = session.query(Station.name).all()
     session.close()
     
     #convert list of tuples into normal list
@@ -73,10 +86,26 @@ def precipitation():
     return jsonify(all_stations)
 
 @app.route("/api/v1.0/tobs")
+#query dates and temps of most active station for the last year 
+#return a json list of TOBS for the previous year
+def tobs():
+    #create session
+    session = Session(execute)
+    #select all
+    engine.execute('SELECT date, tobs FROM Measurement')
+    
+    #query date and temps for most active station
+    results = session.query(Measurement.date, Measurement.tobs).\
+            filter(Measurement.station=='USC00519281').all()
+    session.close()
+    
+    active_temps = list(np.ravel(results))
+    
+    return jsonify(active_temps)
 
-@app.route("/api/v1.0/<start>")
+#@app.route("/api/v1.0/<start>")
 
-@app.route("/api/v1.0/<start>/<end>")
+#@app.route("/api/v1.0/<start>/<end>")
 
 
 if __name__ == '__main__':
