@@ -45,7 +45,7 @@ def welcome():
     )
 
 @app.route("/api/v1.0/precipitation")
-#convert query reuslts to a dictionary with date and the key and prcp as the value
+#convert query results to a dictionary with date and the key and prcp as the value
 #return JSON representation of your dictionary
 def precipitation():
     #create session
@@ -64,12 +64,12 @@ def precipitation():
         precip_dict = {}
         precip_dict[date] = prcp
         all_measures.append(precip_dict)
-    
+    #jsonify dictionary
     return jsonify(all_measures)
         
-    
 
 @app.route("/api/v1.0/stations")
+#return a JSON list of all stations from the dataset
 def stations():
     #create session
     session = Session(engine)
@@ -82,7 +82,7 @@ def stations():
     
     #convert list of tuples into normal list
     all_stations = list(np.ravel(results))
-    
+    #jsonify list
     return jsonify(all_stations)
 
 @app.route("/api/v1.0/tobs")
@@ -99,13 +99,48 @@ def tobs():
             filter(Measurement.station=='USC00519281').all()
     session.close()
     
+    #create list
     active_temps = list(np.ravel(results))
-    
+    #jsonify list of temps
     return jsonify(active_temps)
 
-#@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>")
+#when given the start only, calculate the min, avg, max for all dates
+#greater than or equal to the start date
+def start_only(start):
+    
+    #select only date and tobs
+    engine.execute('SELECT date, tobs FROM Measurement').fetchall()
+    
+    #query from start date
+    results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
+                filter(Measurement.date >= start).all()
+    session.close()
+    
+    #create list
+    temps_from_start = list(np.ravel(results))
+    #jsonify list
+    return jsonify(temps_from_start)
+    
+    
 
-#@app.route("/api/v1.0/<start>/<end>")
+@app.route("/api/v1.0/<start>/<end>")
+#when given the start and end date, calculate the min/max/avg for dates
+#between the start and end date inclusive
+def start_end(start, end)
+    #select only date and tobs
+    engine.execute('SELECT date, tobs FROM Measurement').fetchall()
+    
+    #query from start date to end date
+    results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
+                filter(Measurement.date >= start).\
+                filter(Measurement.date <= end).all()
+    session.close()
+    
+    #create list
+    temps_in_range = list(np.ravel(results))
+    #jsonify list
+    return jsonify(temps_in_range)
 
 
 if __name__ == '__main__':
