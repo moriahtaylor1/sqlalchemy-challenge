@@ -56,13 +56,21 @@ def precipitation():
     results = session.query(Measurement.date, Measurement.prcp).\
                 order_by(Measurement.date).all()
     session.close()
-    
-    #convert list of tuples into normal list
-    all_measures = list(np.ravel(results))
-    
-    return jsonify(all_measures)
 
 @app.route("/api/v1.0/stations")
+    #create session
+    session = Session(engine)
+    #select date and prcp
+    engine.execute('SELECT station FROM Measurement').fetchall()
+    
+    #query all precipitation measurements
+    results = session.query(Measurement.station).all()
+    session.close()
+    
+    #convert list of tuples into normal list
+    all_stations = list(np.ravel(results))
+    
+    return jsonify(all_stations)
 
 @app.route("/api/v1.0/tobs")
 
