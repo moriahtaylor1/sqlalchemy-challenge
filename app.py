@@ -19,7 +19,7 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 # Save reference to the table
-precipitation = Base.classes.hawaii
+Precipitation = Base.classes.hawaii
 
 #################################################
 # Flask Setup
@@ -44,11 +44,33 @@ def welcome():
     )
 
 @app.route("/api/v1.0/precipitation")
+#convert query reuslts to a dictionary with date and the key and prcp as the value
+#return JSON representation of your dictionary
+def precipitation():
+    #create session
+    session = Session(engine)
+    #select date and prcp
+    engine.execute('SELECT date, prcp FROM Measurement').fetchall()
+    
+    #query all precipitation measurements
+    results = session.query(Measurement.date, Measurement.prcp).\
+                order_by(Measurement.date).all()
+    session.close()
+    
+    #convert list of tuples into normal list
+    all_measures = list(np.ravel(results))
+    
+    return jsonify(all_measures)
+
 @app.route("/api/v1.0/stations")
+
 @app.route("/api/v1.0/tobs")
 
 @app.route("/api/v1.0/<start>")
+
 @app.route("/api/v1.0/<start>/<end>")
 
 
+if __name__ == '__main__':
+    app.run(debug=True)
 
