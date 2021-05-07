@@ -90,7 +90,7 @@ def stations():
 #return a json list of TOBS for the previous year
 def tobs():
     #create session
-    session = Session(execute)
+    session = Session(engine)
     #select all
     engine.execute('SELECT date, tobs FROM Measurement')
     
@@ -108,7 +108,8 @@ def tobs():
 #when given the start only, calculate the min, avg, max for all dates
 #greater than or equal to the start date
 def start_only(start):
-    
+    #create session
+    session = Session(engine)
     #select only date and tobs
     engine.execute('SELECT date, tobs FROM Measurement').fetchall()
     
@@ -127,7 +128,7 @@ def start_only(start):
 @app.route("/api/v1.0/<start>/<end>")
 #when given the start and end date, calculate the min/max/avg for dates
 #between the start and end date inclusive
-def start_end(start, end)
+def start_end(start, end):
     #select only date and tobs
     engine.execute('SELECT date, tobs FROM Measurement').fetchall()
     
