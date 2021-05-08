@@ -129,6 +129,8 @@ def start_only(start):
 #when given the start and end date, calculate the min/max/avg for dates
 #between the start and end date inclusive
 def start_end(start, end):
+    #create session
+    session = Session(engine)
     #select only date and tobs
     engine.execute('SELECT date, tobs FROM Measurement').fetchall()
     
